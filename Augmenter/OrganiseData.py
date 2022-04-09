@@ -3,7 +3,7 @@ import re
 import os
 import argparse
 import pandas as pd
-
+from tqdm import tqmd
 
 class OrganiseYoloData:
     def __init__(self, imagesPath, labelsPath):
@@ -11,15 +11,16 @@ class OrganiseYoloData:
         self.labelsPath = labelsPath
 
     def create_dataframe(self, save_file=None):
+        print("Initialize creating of images info dataframe..."
         df = pd.DataFrame()
         for image_file in os.listdir(self.imagesPath):
-            print(image_file)
+            #print(image_file)
             image_file_name, exten = os.path.splitext(image_file)
             file_dict = {}
             lines = []
-            print(image_file_name)
+            #print(image_file_name)
             for text_file in os.listdir(self.labelsPath):
-                text_file_name, exten = text_file.split(".")
+                text_file_name, exten = os.path.splitext(image_file)
 
                 if image_file_name == text_file_name:
                     with open(os.path.join(self.labelsPath,text_file)) as f:
@@ -29,12 +30,12 @@ class OrganiseYoloData:
                 file_dict["bbox_data"] = [lines]
             df_set = pd.DataFrame(file_dict,index=[0])
             df = df.append(df_set,ignore_index=True)
-            print(file_dict)
-        print(df.head(3))
+            #print(file_dict)
+        #print(df.head(3))
         if save_file != None:
             df.to_csv(save_file)
         rand_data = df.loc[2,"bbox_data"]
-        print(rand_data)
+        #print(rand_data)
         return df
 
     def get_class_bbox(self,colmns, from_csv=True):
@@ -42,7 +43,7 @@ class OrganiseYoloData:
             check_lst = colmns
         else:
             check_lst = ast.literal_eval(colmns)
-        print(len(check_lst))
+        #print(len(check_lst))
         datas = pd.DataFrame()
         class_lst = []
         for cls in range(len(check_lst)):
