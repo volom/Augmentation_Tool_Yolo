@@ -13,7 +13,7 @@ class OrganiseYoloData:
     def create_dataframe(self, save_file=None):
         print("Initialize creating of images info dataframe..."
         df = pd.DataFrame()
-        for image_file in os.listdir(self.imagesPath):
+        for image_file in tqdm(os.listdir(self.imagesPath), position=0, leave=True):
             #print(image_file)
             image_file_name, exten = os.path.splitext(image_file)
             file_dict = {}
