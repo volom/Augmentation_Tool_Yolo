@@ -3,7 +3,7 @@ import re
 import os
 import argparse
 import pandas as pd
-from tqdm import tqmd
+from tqdm import tqdm
 
 class OrganiseYoloData:
     def __init__(self, imagesPath, labelsPath):
@@ -11,39 +11,30 @@ class OrganiseYoloData:
         self.labelsPath = labelsPath
 
     def create_dataframe(self, save_file=None):
-        print("Initialize creating of images info dataframe..."
+        print("Start processing dataframe...")
         df = pd.DataFrame()
-        for image_file in tqdm(os.listdir(self.imagesPath), position=0, leave=True):
-            #print(image_file)
-            image_file_name, exten = os.path.splitext(image_file)
-            file_dict = {}
-            lines = []
-            #print(image_file_name)
-            for text_file in os.listdir(self.labelsPath):
-                text_file_name, exten = os.path.splitext(image_file)
-
-                if image_file_name == text_file_name:
-                    with open(os.path.join(self.labelsPath,text_file)) as f:
-                        #contents = f.read()
-                        lines = f.readlines()
-                file_dict["file_path"] = os.path.join(self.imagesPath, image_file)
-                file_dict["bbox_data"] = [lines]
-            df_set = pd.DataFrame(file_dict,index=[0])
-            df = df.append(df_set,ignore_index=True)
-            #print(file_dict)
-        #print(df.head(3))
+        
+        def get_box(image_path, label_path):
+            label_file = open(f"{label_path}{os.path.splitext(image_path)[0]}.txt", 'r')
+            return label_file.readlines()
+        def listdir_fullpath(d):
+            return [os.path.join(d, f) for f in os.listdir(d)]
+        
+        df['file_path'] = listdir_fullpath(self.imagesPath)
+        df['bbox_data'] = df['file_path'].apply(lambda x: get_box(re.match(r'(.*)[/|//](.*)', x).group(2), self.labelsPath))
+        
         if save_file != None:
             df.to_csv(save_file)
         rand_data = df.loc[2,"bbox_data"]
-        #print(rand_data)
+        
         return df
 
-    def get_class_bbox(self,colmns, from_csv=True):
+    def get_class_bbox(self, colmns, from_csv=True):
         if from_csv == False:
             check_lst = colmns
         else:
             check_lst = ast.literal_eval(colmns)
-        #print(len(check_lst))
+        print(check_lst)
         datas = pd.DataFrame()
         class_lst = []
         for cls in range(len(check_lst)):
@@ -57,7 +48,7 @@ class OrganiseYoloData:
         #print(class_lst)    
         return class_lst
 
-    def create_organiseData(self,file_name="yolo_train.csv",csv=False, save_file=False):
+    def create_organiseData(self, file_name="yolo_train.csv",csv=False, save_file=False):
         datas = pd.DataFrame()
         dataframe = self.create_dataframe()
         for ind, row in dataframe.iterrows():
@@ -71,7 +62,7 @@ class OrganiseYoloData:
             files_dict["bbox_data"] = [col_lst]
             df_set = pd.DataFrame(files_dict)
             datas = datas.append(df_set,ignore_index=True)
-            print(files_dict)
+            #print(files_dict)
         #print(datas)
         if save_file == True:
             datas.to_csv(file_name)
@@ -87,5 +78,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     DataOrg = OrganiseYoloData(args.images_path, args.labels_path)
-    #DataOrg.create_dataframe()
+    DataOrg.create_dataframe()
     DataOrg.create_organiseData(file_name="yolo_object_detection.csv", save_file=True)
