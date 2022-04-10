@@ -34,7 +34,7 @@ class OrganiseYoloData:
             check_lst = colmns
         else:
             check_lst = ast.literal_eval(colmns)
-        print(check_lst)
+        
         datas = pd.DataFrame()
         class_lst = []
         for cls in range(len(check_lst)):
